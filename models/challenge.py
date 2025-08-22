@@ -4,7 +4,7 @@ class Challenge(Document):
     """
     Challenge model for storing coding challenges
     """
-    id = StringField(required=True, unique=True, max_length=100)
+    challenge_id = StringField(required=True, unique=True, max_length=100)
     title = StringField(required=True, max_length=200)
     description = StringField(required=True)
     difficulty = StringField(required=True, choices=['easy', 'medium', 'hard'])
@@ -12,17 +12,13 @@ class Challenge(Document):
     testCases = ListField(DictField(), required=True)
     
     meta = {
-        'collection': 'challenges',
-        'indexes': [
-            'id',
-            'difficulty'
-        ]
+        'collection': 'challenges'
     }
     
     def to_dict(self):
         """Convert challenge object to dictionary"""
         return {
-            'id': self.id,
+            'id': self.challenge_id,
             'title': self.title,
             'description': self.description,
             'difficulty': self.difficulty,
@@ -33,7 +29,7 @@ class Challenge(Document):
     def to_dict_public(self):
         """Convert challenge object to dictionary without test cases (for public endpoints)"""
         return {
-            'id': self.id,
+            'id': self.challenge_id,
             'title': self.title,
             'description': self.description,
             'difficulty': self.difficulty,
@@ -41,4 +37,4 @@ class Challenge(Document):
         }
     
     def __str__(self):
-        return f"Challenge(id={self.id}, title={self.title}, difficulty={self.difficulty})" 
+        return f"Challenge(id={self.challenge_id}, title={self.title}, difficulty={self.difficulty})" 

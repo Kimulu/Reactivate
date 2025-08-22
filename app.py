@@ -94,7 +94,7 @@ def get_challenges():
         
         for challenge in challenges:
             challenges_list.append({
-                'id': challenge.id,
+                'id': challenge.challenge_id,
                 'title': challenge.title,
                 'description': challenge.description,
                 'difficulty': challenge.difficulty,
@@ -110,12 +110,12 @@ def get_challenges():
 def get_challenge(challenge_id):
     """Get a specific challenge"""
     try:
-        challenge = Challenge.objects(id=challenge_id).first()
+        challenge = Challenge.objects(challenge_id=challenge_id).first()
         if not challenge:
             return jsonify({'error': 'Challenge not found'}), 404
         
         return jsonify({
-            'id': challenge.id,
+            'id': challenge.challenge_id,
             'title': challenge.title,
             'description': challenge.description,
             'difficulty': challenge.difficulty,
@@ -143,7 +143,7 @@ def complete_challenge(challenge_id):
             return jsonify({'error': 'User not found'}), 404
         
         # Check if challenge exists
-        challenge = Challenge.objects(id=challenge_id).first()
+        challenge = Challenge.objects(challenge_id=challenge_id).first()
         if not challenge:
             return jsonify({'error': 'Challenge not found'}), 404
         

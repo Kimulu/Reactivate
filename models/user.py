@@ -10,12 +10,7 @@ class User(Document):
     completedChallenges = ListField(StringField(), default=[])
     
     meta = {
-        'collection': 'users',
-        'indexes': [
-            'userId',
-            'score',
-            'rank'
-        ]
+        'collection': 'users'
     }
     
     def to_dict(self):
