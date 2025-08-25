@@ -44,7 +44,14 @@ export function Navbar() {
         </div>
 
         {/* Auth Buttons */}
-        <div className="flex items-center space-x-4"></div>
+        <div className="flex items-center space-x-4">
+          <button className="bg-transparent hover:bg-blue-500 text-white font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded">
+            Login
+          </button>
+          <button className="bg-transparent hover:bg-blue-500 text-white font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded">
+            Join
+          </button>
+        </div>
       </div>
     </nav>
   );
