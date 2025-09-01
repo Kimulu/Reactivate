@@ -1,14 +1,39 @@
+// pages/Login.tsx
+
 import Link from "next/link";
 import React, { useState, FormEvent } from "react";
+import { useRouter } from "next/router";
+import { apiClient } from "../utils/apiClient";
+import toast from "react-hot-toast"; // Import toast
 
 const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
-  const handleFormSubmit = (e: FormEvent) => {
+  const handleFormSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    console.log("Login attempt with:", username, password);
-    // We'll add the API call here later
+    setIsLoading(true);
+
+    try {
+      // Call the login API endpoint
+      const response = await apiClient.loginUser(username, password);
+
+      // Save the token and redirect on success
+      localStorage.setItem("token", response.token);
+      toast.success("Logged in successfully! 🎉"); // Display a success toast
+
+      // Redirect to the challenges page after a short delay to show the toast
+      setTimeout(() => {
+        router.push("/challenges");
+      }, 650);
+    } catch (error: any) {
+      console.error("Login error:", error);
+      toast.error(error.message); // Display an error toast
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -53,8 +78,9 @@ const Login = () => {
           <button
             type="submit"
             className="w-full py-2 px-4 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+            disabled={isLoading}
           >
-            Log In
+            {isLoading ? "Logging In..." : "Log In"}
           </button>
         </form>
         <div className="mt-6 text-center">

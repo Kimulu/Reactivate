@@ -1,14 +1,47 @@
+// pages/Signup.tsx
+
 import React, { useState, FormEvent } from "react";
 import Link from "next/link";
+import { useRouter } from "next/router";
+import { apiClient } from "../utils/apiClient";
+import toast from "react-hot-toast"; // Import toast
 
 const Signup = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
-  const handleFormSubmit = (e: FormEvent) => {
+  const handleFormSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    console.log("Signup attempt with:", username, password);
-    // We'll add the API call here later
+    setIsLoading(true);
+
+    try {
+      const response = await apiClient.signupUser(username, password);
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("User signed up. Token:", data.token);
+        localStorage.setItem("token", data.token);
+
+        // Add a success toast message
+        toast.success("Signed up successfully! 🎉");
+
+        // Redirect after a short delay to allow the toast to show
+        setTimeout(() => {
+          router.push("/challenges");
+        }, 1000);
+      } else {
+        const errorData = await response.json();
+        console.error("Signup failed:", errorData.error);
+        toast.error(`Signup failed: ${errorData.error}`);
+      }
+    } catch (error) {
+      console.error("An error occurred during signup:", error);
+      toast.error("An error occurred. Please try again later.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -53,8 +86,9 @@ const Signup = () => {
           <button
             type="submit"
             className="w-full py-2 px-4 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+            disabled={isLoading}
           >
-            Sign Up
+            {isLoading ? "Signing Up..." : "Sign Up"}
           </button>
         </form>
         <div className="mt-6 text-center">
