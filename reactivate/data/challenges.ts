@@ -1,52 +1,76 @@
 // data/challenges.ts
-export interface ChallengeDef {
-  id: string;
-  title: string;
-  description: string;
-  difficulty: "Easy" | "Medium" | "Hard";
-  instructions: string;
-  hints: string[];
-  files: { [path: string]: string };
-  tests: { description: string; run: string }[]; // run can be a function string for now
-}
+import { Challenge } from "@/types/challenge";
 
-export const challenges: ChallengeDef[] = [
+export const challenges: Challenge[] = [
   {
-    id: "course-goal-props",
-    title: "Working with Props",
-    description: "Make CourseGoal reusable with title + description props.",
+    id: "button-component",
+    title: "Build a Button Component",
+    description: "Create a reusable button with custom styles.",
     difficulty: "Easy",
+
     instructions: `
-Your task is to make the CourseGoal component reusable.
-It should accept a "title" and "description" and render them in <h2> and <p>.
+Your task is to build a reusable \`Button\` component.
+
+Requirements:
+- Accept a \`label\` prop and render it inside the button
+- Apply base styles from \`style.css\`
+- On click, log \`Button clicked!\` to the console
     `,
     hints: [
-      "Use props destructuring: ({ title, description })",
-      "Render props between <h2> and <p>.",
+      "Remember to use props to pass text into your component.",
+      "Use the onClick prop for event handling.",
     ],
+
     files: {
-      "/App.js": `import CourseGoal from './CourseGoal';
+      "App.js": `import React from "react";
+import { Button } from "./Button";
 
 export default function App() {
   return (
-    <ul>
-      <CourseGoal title="Learn React" description="In-depth" />
-      <CourseGoal title="Practice More" description="Hands-on coding" />
-    </ul>
+    <div className="app">
+      <h1>Hello React</h1>
+      <Button label="Click me" />
+    </div>
   );
 }`,
-      "/CourseGoal.js": `export default function CourseGoal({ title, description }) {
+      "Button.js": `import React from "react";
+
+export const Button = ({ label }) => {
   return (
-    <li>
-      <h2>{title}</h2>
-      <p>{description}</p>
-    </li>
+    <button className="btn" onClick={() => console.log("Button clicked!")}>
+      {label}
+    </button>
   );
+};`,
+      "style.css": `.btn {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.btn:hover {
+  background: #1d4ed8;
 }`,
-      "/index.css": `body { font-family: sans-serif; }`,
     },
+
     tests: [
-      { description: "renders 'Learn React'", run: "getByText('Learn React')" },
+      {
+        description: "renders button with label",
+        code: `render(<Button label="Click me" />);
+expect(screen.getByText("Click me")).toBeInTheDocument();`,
+      },
+      {
+        description: "logs click to console",
+        code: `const logSpy = jest.spyOn(console, "log");
+render(<Button label="Click" />);
+fireEvent.click(screen.getByText("Click"));
+expect(logSpy).toHaveBeenCalledWith("Button clicked!");`,
+      },
     ],
+
+    state: "not-started",
   },
 ];
