@@ -1,11 +1,10 @@
 import Link from "next/link";
 import React, { ReactNode } from "react";
-
-// A local Link component is defined here to ensure the code compiles in this environment.
+import { challenges } from "@/data/challenges"; // ✅ central data import
 
 // Define the type for the challenge prop
 interface Challenge {
-  id: number;
+  id: string; // ✅ use string since we'll reference by id in URL
   title: string;
   description: string;
   difficulty: "Easy" | "Medium" | "Hard";
@@ -33,9 +32,12 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({ challenge }) => {
         >
           {challenge.difficulty}
         </span>
-        <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full transition-colors">
+        <Link
+          href={`/challenges/${challenge.id}`} // ✅ dynamic route
+          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full transition-colors"
+        >
           Start
-        </button>
+        </Link>
       </div>
     </div>
   );
@@ -89,7 +91,7 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M17 20h-10c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4z"
+                    d="M17 20h-10c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79-4-4 4z"
                   />
                   <path
                     strokeLinecap="round"
@@ -141,73 +143,6 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
 };
 
 const Challenges = () => {
-  // Dummy data for challenges. In a real app, this would come from an API.
-  const challenges: Challenge[] = [
-    {
-      id: 1,
-      title: "Two Sum",
-      description: "Find the indices of two numbers that add up to a target.",
-      difficulty: "Easy",
-    },
-    {
-      id: 2,
-      title: "Longest Substring Without Repeating Characters",
-      description:
-        "Find the length of the longest substring without repeating characters.",
-      difficulty: "Medium",
-    },
-    {
-      id: 3,
-      title: "Merge Two Sorted Lists",
-      description:
-        "Merge two sorted linked lists and return it as a new sorted list.",
-      difficulty: "Easy",
-    },
-    {
-      id: 4,
-      title: "Valid Parentheses",
-      description: "Determine if a string is a valid sequence of parentheses.",
-      difficulty: "Easy",
-    },
-    {
-      id: 5,
-      title: "Reverse Linked List",
-      description: "Reverse a singly linked list.",
-      difficulty: "Easy",
-    },
-    {
-      id: 6,
-      title: "Roman to Integer",
-      description: "Convert a Roman numeral to an integer.",
-      difficulty: "Easy",
-    },
-    {
-      id: 7,
-      title: "Find the Duplicate Number",
-      description: "Find the one repeated number in an array.",
-      difficulty: "Medium",
-    },
-    {
-      id: 8,
-      title: "Binary Tree Level Order Traversal",
-      description: "Return the level order traversal of a binary tree.",
-      difficulty: "Medium",
-    },
-    {
-      id: 9,
-      title: "3Sum",
-      description:
-        "Find all unique triplets in the array which gives the sum of zero.",
-      difficulty: "Medium",
-    },
-    {
-      id: 10,
-      title: "Rotate Image",
-      description: "Rotate a square matrix by 90 degrees (clockwise).",
-      difficulty: "Hard",
-    },
-  ];
-
   return (
     <DashboardLayout>
       <div className="p-4 md:p-8">
