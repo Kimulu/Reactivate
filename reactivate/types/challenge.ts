@@ -1,20 +1,17 @@
-// types/challenge.ts
 export interface Challenge {
-  id: string; // unique slug like "button-component"
+  id: string;
   title: string;
-  description: string; // short summary for dashboard cards
+  description: string;
   difficulty: "Easy" | "Medium" | "Hard";
 
-  instructions: string; // markdown / text with requirements
+  instructions: string;
   hints: string[];
 
-  files: {
-    [filename: string]: string; // e.g. { "App.tsx": "...", "Button.tsx": "...", "style.css": "..." }
-  };
+  initialCode: string; // The complete, single-file code for the challenge
 
   tests: {
-    description: string; // e.g. "renders button with text"
-    code: string; // Jest/RTL-like test code (to be run in sandbox)
+    description: string;
+    code: string;
   }[];
 
   state?: "not-started" | "in-progress" | "completed";

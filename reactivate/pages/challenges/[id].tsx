@@ -1,29 +1,33 @@
 import React, { useState, useRef, useEffect } from "react";
-
-const initialCode = `function App() {
-  console.log("Welcome to the compiler!");
-  return (
-    <div className="p-5 font-sans">
-      <h1 className="text-3xl font-bold text-gray-800">Hello, World!</h1>
-      <p className="mt-2 text-gray-600">This is a live React compiler.</p>
-    </div>
-  );
-}`;
+import { useRouter } from "next/router";
+import { challenges } from "@/data/challenges";
+import Link from "next/link";
 
 const ChallengeDetail = () => {
-  const [code, setCode] = useState(initialCode);
+  const router = useRouter();
+  const { id } = router.query;
+
+  const challenge = challenges.find((c) => c.id === id);
+
+  if (!challenge) {
+    return (
+      <div className="flex items-center justify-center h-screen text-white bg-gray-900">
+        <p>Loading challenge...</p>
+      </div>
+    );
+  }
+
+  const [code, setCode] = useState(challenge.initialCode);
   const iframeRef = useRef(null);
   const [logs, setLogs] = useState([]);
   const [isLogsPanelVisible, setIsLogsPanelVisible] = useState(true);
   const [activeBottomTab, setActiveBottomTab] = useState("tests");
   const [isLoading, setIsLoading] = useState(true);
 
-  // Vertical splitters state
   const [instructionsWidth, setInstructionsWidth] = useState(30);
   const [editorWidth, setEditorWidth] = useState(40);
   const [previewWidth, setPreviewWidth] = useState(30);
 
-  // Drag logic for vertical splitters
   const startDrag = (e, panel) => {
     e.preventDefault();
     const startX = e.clientX;
@@ -44,6 +48,7 @@ const ChallengeDetail = () => {
         );
       }
     };
+
     const endDrag = () => {
       document.removeEventListener("mousemove", doDrag);
       document.removeEventListener("mouseup", endDrag);
@@ -53,12 +58,10 @@ const ChallengeDetail = () => {
     document.addEventListener("mouseup", endDrag);
   };
 
-  // Update the preview panel width based on the other two
   useEffect(() => {
     setPreviewWidth(100 - instructionsWidth - editorWidth);
   }, [instructionsWidth, editorWidth]);
 
-  // Load Babel and ReactDOM once on component mount
   useEffect(() => {
     const scriptBabel = document.createElement("script");
     scriptBabel.src = "https://unpkg.com/@babel/standalone/babel.min.js";
@@ -77,9 +80,7 @@ const ChallengeDetail = () => {
       }
     };
     window.addEventListener("message", handleMessage);
-    return () => {
-      window.removeEventListener("message", handleMessage);
-    };
+    return () => window.removeEventListener("message", handleMessage);
   }, []);
 
   const runCode = () => {
@@ -117,10 +118,8 @@ const ChallengeDetail = () => {
                 window.parent.postMessage({ type: 'error', payload: args.join(' ') }, '*');
                 originalError(...args);
               };
-
               try {
                 ${transpiledCode}
-                
                 const root = ReactDOM.createRoot(document.getElementById('root'));
                 root.render(React.createElement(App));
               } catch (err) {
@@ -139,18 +138,35 @@ const ChallengeDetail = () => {
   };
 
   const resetCode = () => {
-    setCode(initialCode);
+    setCode(challenge.initialCode);
     setLogs([]);
     runCode();
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-900 text-white font-sans">
+    <div className="flex flex-col h-screen bg-gray-900 text-white font-sans overflow-hidden">
       <style>{`
         .splitter-vertical {
-          background-color: #333;
-          width: 5px;
+          background-color: transparent;
+          width: 10px;
           cursor: col-resize;
+          flex-shrink: 0;
+          position: relative;
+        }
+        .splitter-vertical::after {
+          content: '';
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          height: 50px;
+          width: 2px;
+          background-color: #555;
+          border-radius: 2px;
+          transition: background-color 0.2s ease;
+        }
+        .splitter-vertical:hover::after {
+          background-color: #888;
         }
         .collapsible-horizontal {
           background-color: #333;
@@ -160,90 +176,58 @@ const ChallengeDetail = () => {
           align-items: center;
           justify-content: center;
         }
-        textarea {
-          width: 100%;
-          height: 100%;
-          border: none;
-          background-color: #1e1e1e;
-          color: white;
+        .textarea-editor {
+          background-color: #1a202c;
+          color: #f7fafc;
           font-family: monospace;
           font-size: 14px;
+          padding: 1rem;
           resize: none;
           outline: none;
-          padding: 10px;
-          box-sizing: border-box;
-          overflow: auto;
+          border-width: 0px;
+          overflow-y: auto;
         }
       `}</style>
 
-      {/* Top section: Instructions, Code Editor, and Preview */}
+      {/* Main split panels */}
       <div
-        className="flex flex-grow"
+        className="flex flex-grow overflow-hidden"
         style={{ height: isLogsPanelVisible ? "65%" : "100%" }}
       >
-        {/* Instructions Panel */}
+        {/* Instructions */}
         <div
-          className="p-4 bg-gray-800 overflow-y-auto"
+          className="flex flex-col overflow-hidden"
           style={{ flexBasis: `${instructionsWidth}%` }}
         >
-          <div className="p-2 border-b border-gray-700 flex">
-            <h2 className="text-white font-bold p-2 bg-gray-600 rounded-t-md">
-              Instructions
-            </h2>
+          <div className="px-4 py-2 text-gray-300 border-b border-gray-700 bg-gray-800 text-sm font-bold">
+            Instructions
           </div>
-          <div className="px-2 py-4 text-gray-300 space-y-4">
-            <h2 className="text-xl font-bold">Using Fragments</h2>
-            <p>
-              Your task is to edit the existing `Summary` component such that it
-              outputs the following content:
-            </p>
-            <p>
-              Inside the `Summary` component, this content must not be wrapped
-              by any other HTML element!
-            </p>
-            <p>For example, this code would be wrong:</p>
-            <pre className="bg-gray-700 p-2 rounded-md overflow-x-auto text-sm">
-              <code>
-                &lt;div&gt;
-                <br />
-                &nbsp;&nbsp;&lt;h1&gt;Summary&lt;/h1&gt;
-                <br />
-                &nbsp;&nbsp;&lt;p&gt;{`text`}&lt;/p&gt;
-                <br />
-                &lt;/div&gt;
-              </code>
-            </pre>
-          </div>
+          <div
+            className="p-4 bg-gray-900 overflow-y-auto flex-grow"
+            dangerouslySetInnerHTML={{ __html: challenge.instructions }}
+          />
         </div>
-        {/* Vertical Splitter */}
+
         <div
           className="splitter-vertical"
           onMouseDown={(e) => startDrag(e, "instructions")}
         ></div>
 
-        {/* Code Editor Panel */}
+        {/* Code Editor */}
         <div
-          className="flex flex-col bg-gray-800"
+          className="flex flex-col bg-gray-900 overflow-hidden"
           style={{ flexBasis: `${editorWidth}%` }}
         >
-          <div className="p-2 border-b border-gray-700 flex justify-between items-center">
-            <div className="flex gap-1">
-              <span className="p-2 bg-gray-600 rounded-t-md text-white font-bold cursor-pointer">
-                App.js
-              </span>
-              <span className="p-2 bg-gray-800 text-gray-400 font-bold cursor-pointer">
-                index.css
-              </span>
-            </div>
+          <div className="px-4 py-2 text-gray-300 border-b border-gray-700 bg-gray-800 text-sm font-bold">
+            App.js
           </div>
-          <div className="flex-grow p-2">
-            <textarea
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              spellCheck="false"
-            />
-          </div>
-          <div className="p-2 bg-gray-800 border-t border-gray-700 flex justify-start items-center gap-4">
+          <textarea
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            spellCheck="false"
+            className="flex-grow textarea-editor overflow-y-auto"
+          />
+          <div className="p-2 bg-gray-800 border-t border-gray-700 flex gap-4">
             <button
               onClick={runCode}
               className="bg-green-600 hover:bg-green-700 text-white font-bold px-6 py-2 rounded-lg transition-colors duration-200"
@@ -256,25 +240,29 @@ const ChallengeDetail = () => {
             >
               Reset
             </button>
+            <Link
+              href="/challenges"
+              className="text-white font-bold px-6 py-2 rounded-lg transition-colors duration-200 border-1 border-dashed border-blue-500"
+            >
+              <button> Back to Challenges</button>
+            </Link>
           </div>
         </div>
-        {/* Vertical Splitter */}
+
         <div
           className="splitter-vertical"
           onMouseDown={(e) => startDrag(e, "editor")}
         ></div>
 
-        {/* Preview Panel */}
+        {/* Preview */}
         <div
-          className="flex flex-col bg-white"
+          className="flex flex-col bg-white overflow-hidden"
           style={{ flexBasis: `${previewWidth}%` }}
         >
-          <div className="p-2 border-b border-gray-300 flex">
-            <h2 className="text-gray-800 font-bold p-2 bg-gray-200 rounded-t-md">
-              Preview
-            </h2>
+          <div className="px-4 py-2 text-gray-800 bg-gray-200 text-sm font-bold">
+            Preview
           </div>
-          <div className="flex-grow overflow-y-auto relative">
+          <div className="flex-grow overflow-auto relative">
             {isLoading && (
               <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 z-10">
                 <p className="text-gray-800 font-bold text-lg">Loading...</p>
@@ -290,7 +278,7 @@ const ChallengeDetail = () => {
         </div>
       </div>
 
-      {/* Collapsible horizontal panel for logs */}
+      {/* Collapsible Logs */}
       <div
         className="collapsible-horizontal"
         onClick={() => setIsLogsPanelVisible(!isLogsPanelVisible)}
@@ -300,17 +288,17 @@ const ChallengeDetail = () => {
         </span>
       </div>
 
-      {/* Bottom section: Test Results and Logs */}
+      {/* Bottom Logs */}
       <div
-        className={`flex flex-grow transition-all duration-300 ease-in-out ${
-          !isLogsPanelVisible ? "max-h-0 overflow-hidden" : "max-h-full"
+        className={`flex flex-grow transition-all duration-300 ease-in-out overflow-hidden ${
+          !isLogsPanelVisible ? "max-h-0" : "max-h-full"
         }`}
       >
-        <div className="flex-1 flex flex-col p-4 bg-gray-800 overflow-y-auto">
+        <div className="flex-1 flex flex-col p-4 bg-gray-800 overflow-hidden">
           <div className="flex gap-4 p-2 border-b border-gray-700">
             <button
               onClick={() => setActiveBottomTab("tests")}
-              className={`font-bold p-2 rounded-t-md transition-colors duration-200 ${
+              className={`font-bold p-2 rounded-t-md ${
                 activeBottomTab === "tests"
                   ? "bg-gray-700 text-white"
                   : "text-gray-400"
@@ -320,7 +308,7 @@ const ChallengeDetail = () => {
             </button>
             <button
               onClick={() => setActiveBottomTab("logs")}
-              className={`font-bold p-2 rounded-t-md transition-colors duration-200 ${
+              className={`font-bold p-2 rounded-t-md ${
                 activeBottomTab === "logs"
                   ? "bg-gray-700 text-white"
                   : "text-gray-400"
@@ -330,7 +318,7 @@ const ChallengeDetail = () => {
             </button>
           </div>
 
-          <div className="flex-grow p-4">
+          <div className="flex-grow p-4 overflow-y-auto">
             {activeBottomTab === "tests" ? (
               <div className="space-y-4">
                 <div className="flex items-center gap-2 text-green-400 font-bold text-lg">
@@ -340,17 +328,7 @@ const ChallengeDetail = () => {
                   </span>
                 </div>
                 <div className="text-gray-300 font-mono">
-                  Test Cases: Failed: 0, Passed: 2 of 2 tests
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 p-2 bg-gray-700 rounded-md">
-                    <span className="text-green-500">✓</span>
-                    <span>Your code passed this test</span>
-                  </div>
-                  <div className="flex items-center gap-2 p-2 bg-gray-700 rounded-md">
-                    <span className="text-green-500">✓</span>
-                    <span>Summary should be a function</span>
-                  </div>
+                  Test Cases: Placeholder for {challenge.title}
                 </div>
               </div>
             ) : (
