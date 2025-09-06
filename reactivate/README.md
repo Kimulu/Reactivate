@@ -1,40 +1,71 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+# 🚀 Collaborative Coding Challenges Platform
 
-## Getting Started
+A community-driven platform where developers can practice coding challenges, view live previews, track their progress via leaderboards, and engage with other learners. The project aims to grow into a **full-featured startup** with gamification, premium features, and community engagement at its core.
 
-First, run the development server:
+---
+
+## 📌 Project Scope
+
+- 📝 Coding challenges with live editor & preview
+- 👥 Community centered around challenges
+- 🏆 Leaderboard tracking
+- 🔑 Authentication & user sessions
+- 🎖️ Gamification (badges, streaks, achievements)
+- 🔒 Premium-only challenges
+- 📢 Future ads integration (e.g., Google Ads)
+
+---
+
+## 🛠️ Tech Stack
+
+- **Frontend**: Next.js + React
+- **Styling**: TailwindCSS
+- **Editor**: Monaco Editor
+- **Code Execution**: esbuild.wasm (was Babel, migrated for speed & stability)
+- **State Management**: Redux (planned)
+- **Backend**: Node.js + Express (planned)
+- **Database**: PostgreSQL or MongoDB (TBD)
+
+---
+
+## ⚡ Recent Progress
+
+One major milestone was **switching from Babel to esbuild.wasm** for running React code in the challenge editor preview.
+
+- This improved **speed**, reduced runtime issues, and worked more smoothly with **Monaco Editor**.
+
+---
+
+## 📂 Project Structure
+
+/pages
+/challenges
+[id].tsx # Challenge details page (editor, preview, tests)
+/public
+esbuild.wasm # WebAssembly build for esbuild
+tailwind.css # Custom Tailwind build for iframe styling
+/components
+... # Shared UI components (WIP)
+/data
+challenges.js # Challenge seeds (title, instructions, initial code)
+
+---
+
+## ⚡ Development Setup
+
+### 1. Clone & Install
 
 ```bash
+git clone <repo-url>
+cd project
+npm install
+
+2. Run the Dev Server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
+3. Build Tailwind for Iframe
+npm run build:tailwind
+
+
+This compiles tailwind.css into /public/tailwind.css, which the iframe uses for consistent styling.
 ```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
-
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
-
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
-
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.

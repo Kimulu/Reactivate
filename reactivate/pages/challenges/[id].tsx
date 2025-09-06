@@ -2,10 +2,17 @@ import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/router";
 import { challenges } from "@/data/challenges";
 import Link from "next/link";
+import { Editor } from "@monaco-editor/react";
+import * as esbuild from "esbuild-wasm";
+import { useEsbuild } from "@/context/EsbuildContext"; // ✅ use context
+
+// ✅ module-level guard (persists across navigations)
+let esbuildInitialized = false;
 
 const ChallengeDetail = () => {
   const router = useRouter();
   const { id } = router.query;
+  const { esbuildReady } = useEsbuild(); // ✅ get readiness from context
 
   const challenge = challenges.find((c) => c.id === id);
 
@@ -62,16 +69,9 @@ const ChallengeDetail = () => {
     setPreviewWidth(100 - instructionsWidth - editorWidth);
   }, [instructionsWidth, editorWidth]);
 
+  // ✅ Listen to logs
   useEffect(() => {
-    const scriptBabel = document.createElement("script");
-    scriptBabel.src = "https://unpkg.com/@babel/standalone/babel.min.js";
-    scriptBabel.onload = () => {
-      setIsLoading(false);
-      runCode();
-    };
-    document.head.appendChild(scriptBabel);
-
-    const handleMessage = (event) => {
+    const handleMessage = (event: MessageEvent) => {
       if (
         event.data &&
         (event.data.type === "log" || event.data.type === "error")
@@ -83,55 +83,73 @@ const ChallengeDetail = () => {
     return () => window.removeEventListener("message", handleMessage);
   }, []);
 
-  const runCode = () => {
+  // ✅ run code once esbuild is ready
+  useEffect(() => {
+    if (esbuildReady) {
+      runCode();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [esbuildReady]);
+
+  const runCode = async () => {
+    if (!esbuildReady) {
+      console.warn("⏳ Esbuild not ready yet. Please wait...");
+      return;
+    }
+
     setIsLoading(true);
     setLogs([]);
     const iframe = iframeRef.current;
-    if (!iframe || !window.Babel) {
-      console.error("Babel not loaded. Please wait and try again.");
+    if (!iframe) {
       setIsLoading(false);
       return;
     }
 
     try {
-      const transpiledCode = window.Babel.transform(code, {
-        presets: ["react"],
-      }).code;
+      const result = await esbuild.transform(code, {
+        loader: "jsx",
+        target: "es2015",
+      });
 
-      const html = `
-        <html>
-          <head>
-            <script src="https://cdn.tailwindcss.com"></script>
-            <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-            <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-          </head>
-          <body>
-            <div id="root"></div>
-            <script>
-              const originalLog = console.log;
-              const originalError = console.error;
-              console.log = (...args) => {
-                window.parent.postMessage({ type: 'log', payload: args.join(' ') }, '*');
-                originalLog(...args);
-              };
-              console.error = (...args) => {
-                window.parent.postMessage({ type: 'error', payload: args.join(' ') }, '*');
-                originalError(...args);
-              };
-              try {
-                ${transpiledCode}
-                const root = ReactDOM.createRoot(document.getElementById('root'));
-                root.render(React.createElement(App));
-              } catch (err) {
-                console.error('Runtime Error:', err.message);
-              }
-            </script>
-          </body>
-        </html>
-      `;
+      const html = `<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-50">
+    <div id="root"></div>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script>
+      const originalLog = console.log;
+      const originalError = console.error;
+      console.log = (...args) => {
+        window.parent.postMessage({ type: 'log', payload: args.join(' ') }, '*');
+        originalLog(...args);
+      };
+      console.error = (...args) => {
+        window.parent.postMessage({ type: 'error', payload: args.join(' ') }, '*');
+        originalError(...args);
+      };
+      try {
+        ${result.code}
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(React.createElement(App));
+      } catch (err) {
+        console.error('Runtime Error:', err && err.message ? err.message : err);
+      }
+    </script>
+  </body>
+</html>`;
+
       iframe.srcdoc = html;
-    } catch (err) {
-      setLogs((prev) => [...prev, `Transpilation Error: ${err.message}`]);
+    } catch (err: any) {
+      setLogs((prev) => [
+        ...prev,
+        `Build Error: ${err && err.message ? err.message : err}`,
+      ]);
     } finally {
       setIsLoading(false);
     }
@@ -221,11 +239,19 @@ const ChallengeDetail = () => {
           <div className="px-4 py-2 text-gray-300 border-b border-gray-700 bg-gray-800 text-sm font-bold">
             App.js
           </div>
-          <textarea
+          <Editor
+            height="100%"
+            defaultLanguage="javascript"
             value={code}
-            onChange={(e) => setCode(e.target.value)}
-            spellCheck="false"
-            className="flex-grow textarea-editor overflow-y-auto"
+            theme="vs-dark"
+            onChange={(value) => setCode(value || "")}
+            options={{
+              fontSize: 14,
+              minimap: { enabled: false },
+              scrollBeyondLastLine: false,
+              wordWrap: "on",
+              automaticLayout: true,
+            }}
           />
           <div className="p-2 bg-gray-800 border-t border-gray-700 flex gap-4">
             <button
