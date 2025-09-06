@@ -24,7 +24,7 @@ A community-driven platform where developers can practice coding challenges, vie
 - **Code Execution**: esbuild.wasm (was Babel, migrated for speed & stability)
 - **State Management**: Redux (planned)
 - **Backend**: Node.js + Express (planned)
-- **Database**: PostgreSQL or MongoDB (TBD)
+- **Database**: MongoDB
 
 ---
 
