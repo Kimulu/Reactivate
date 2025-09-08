@@ -41,5 +41,5 @@ yarn-error.log*
 next-env.d.ts
 
 # Backend
-/express-backend/node_modules
-/express-backend/.env
+/packages/express-backend/node_modules
+/packages/express-backend/.env
