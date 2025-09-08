@@ -1,0 +1,74 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# -----------------
+# Dependencies
+# -----------------
+node_modules/
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# -----------------
+# Testing
+# -----------------
+coverage/
+
+# -----------------
+# Next.js (frontend)
+# -----------------
+.next/
+out/
+
+# -----------------
+# Backend (Express, build outputs, logs, env)
+# -----------------
+packages/backend/node_modules/
+packages/backend/.env
+packages/backend/dist/
+packages/backend/build/
+
+# -----------------
+# Shared
+# -----------------
+packages/shared/node_modules/
+packages/shared/dist/
+
+# -----------------
+# Production builds
+# -----------------
+build/
+
+# -----------------
+# Misc
+# -----------------
+.DS_Store
+*.pem
+
+# -----------------
+# Debug logs
+# -----------------
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# -----------------
+# Env files (any package)
+# -----------------
+.env*
+*.local
+
+# -----------------
+# Vercel / Hosting
+# -----------------
+.vercel
+
+# -----------------
+# TypeScript
+# -----------------
+*.tsbuildinfo
+next-env.d.ts
