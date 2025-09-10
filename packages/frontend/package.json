@@ -9,16 +9,19 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@babel/standalone": "^7.28.3",
+    "@codesandbox/sandpack-react": "^2.20.0",
     "@monaco-editor/react": "^4.7.0",
     "@radix-ui/react-slot": "^1.2.3",
+    "ace-builds": "^1.43.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "esbuild-wasm": "^0.25.9",
     "next": "15.5.0",
     "react": "19.1.0",
+    "react-ace": "^14.0.1",
     "react-dom": "19.1.0",
     "react-hot-toast": "^2.6.0",
+    "react-split": "^2.0.14",
     "tailwind-merge": "^3.3.1",
     "uuid": "^11.1.0"
   },
