@@ -27,7 +27,7 @@ const CustomAceEditor = () => {
       name="custom-ace-editor"
       fontSize={14}
       width="100%"
-      height="370px"
+      height="300px"
       setOptions={{
         enableBasicAutocompletion: true,
         enableLiveAutocompletion: true,

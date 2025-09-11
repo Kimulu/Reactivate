@@ -4,9 +4,14 @@ export default function FileTabs({ allowedFiles }: { allowedFiles: string[] }) {
   const { sandpack } = useSandpack();
   const { activeFile, setActiveFile } = sandpack;
 
+  // Filter out test files and hidden files (starting with "/test" or marked .hidden)
+  const visibleFiles = allowedFiles.filter(
+    (file) => !file.startsWith("/test/") // hide tests and css
+  );
+
   return (
     <div className="flex bg-gray-800 text-gray-200 text-sm">
-      {allowedFiles.map((file) => (
+      {visibleFiles.map((file) => (
         <button
           key={file}
           onClick={() => setActiveFile(file)}

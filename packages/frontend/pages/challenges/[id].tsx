@@ -3,12 +3,61 @@ import { challenges } from "@/data/challenges";
 import {
   SandpackProvider,
   SandpackPreview,
-  SandpackConsole,
   SandpackTests,
   SandpackLayout,
+  useSandpack,
 } from "@codesandbox/sandpack-react";
 import CustomAceEditor from "@/components/CustomAceEditor";
 import FileTabs from "@/components/FileTabs";
+import { useState } from "react";
+
+function TestRunner() {
+  const { dispatch } = useSandpack();
+  const [isRunning, setIsRunning] = useState(false);
+
+  const handleRunTests = () => {
+    setIsRunning(true);
+    dispatch({ type: "run-all-tests" });
+
+    // reset state after ~2s (or when test results are done)
+    setTimeout(() => setIsRunning(false), 2000);
+  };
+
+  return (
+    <div className="flex flex-col h-full">
+      {/* Header with buttons */}
+      <div className="flex items-center justify-between border-b border-gray-700 px-3 py-1 text-sm bg-gray-800">
+        <div className="flex items-center gap-2">
+          <span className="font-semibold">Tests</span>
+          <button
+            onClick={handleRunTests}
+            className={`px-2 py-1 rounded-md text-white transition-colors duration-200 ${
+              isRunning
+                ? "bg-gray-500 cursor-not-allowed"
+                : "bg-blue-600 hover:bg-blue-700"
+            }`}
+            disabled={isRunning}
+          >
+            {isRunning ? "Running..." : "Run Tests"}
+          </button>
+        </div>
+      </div>
+
+      {/* Test results */}
+      <div className="flex-1 min-h-0 overflow-auto">
+        <SandpackTests
+          showVerboseButton={false}
+          showWatchButton={false}
+          style={{
+            width: "100%",
+            height: "100%",
+            backgroundColor: "#0f172a",
+          }}
+        />
+      </div>
+    </div>
+  );
+}
 
 export default function ChallengeDetail() {
   const router = useRouter();
@@ -22,12 +71,23 @@ export default function ChallengeDetail() {
 
   return (
     <div className="h-screen flex flex-col bg-[#0f172a] text-white">
-      <SandpackProvider template="react" theme="dark" files={challenge.files}>
+      <SandpackProvider
+        template="react"
+        theme="dark"
+        files={challenge.files}
+        customSetup={{
+          dependencies: {
+            "@testing-library/react": "latest",
+            "@testing-library/jest-dom": "latest",
+            "@testing-library/dom": "latest",
+          },
+        }}
+      >
         <SandpackLayout>
-          {/* Top row: instructions | editor | preview */}
+          {/* Top row */}
           <div className="flex flex-[2] border-b border-gray-700 min-h-0">
             {/* Instructions */}
-            <div className="w-1/5 border-r border-gray-700 flex flex-col min-h-0">
+            <div className="flex-[1] border-r border-gray-700 flex flex-col min-h-0">
               <div className="border-b border-gray-700 px-3 py-1 text-sm bg-gray-800">
                 Instructions
               </div>
@@ -41,7 +101,7 @@ export default function ChallengeDetail() {
             </div>
 
             {/* Editor */}
-            <div className="w-2/5 border-r border-gray-700 flex flex-col min-h-0">
+            <div className="flex-[2] border-r border-gray-700 flex flex-col min-h-0">
               <div className="border-b border-gray-700">
                 <FileTabs allowedFiles={Object.keys(challenge.files)} />
               </div>
@@ -51,7 +111,7 @@ export default function ChallengeDetail() {
             </div>
 
             {/* Preview */}
-            <div className="w-2/5 flex flex-col min-h-0">
+            <div className="flex-[2] flex flex-col min-h-0">
               <div className="border-b border-gray-700 px-3 py-1 text-sm bg-gray-800">
                 Preview
               </div>
@@ -70,38 +130,10 @@ export default function ChallengeDetail() {
           </div>
         </SandpackLayout>
 
-        {/* Bottom row: console | tests */}
+        {/* Bottom row: tests only */}
         <div className="flex flex-[1] border-t border-gray-700 min-h-0">
-          {/* Console */}
-          <div className="w-1/2 border-r border-gray-700 flex flex-col min-h-0">
-            <div className="border-b border-gray-700 px-3 py-1 text-sm bg-gray-800">
-              Console
-            </div>
-            <div className="flex-1 min-h-0 overflow-auto">
-              <SandpackConsole
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  backgroundColor: "#0f172a",
-                }}
-              />
-            </div>
-          </div>
-
-          {/* Tests */}
-          <div className="w-1/2 flex flex-col min-h-0">
-            <div className="border-b border-gray-700 px-3 py-1 text-sm bg-gray-800">
-              Tests
-            </div>
-            <div className="flex-1 min-h-0 overflow-auto">
-              <SandpackTests
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  backgroundColor: "#0f172a",
-                }}
-              />
-            </div>
+          <div className="flex-1 flex flex-col min-h-0">
+            <TestRunner />
           </div>
         </div>
       </SandpackProvider>
