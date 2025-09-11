@@ -4,7 +4,7 @@ export const challenges = [
     id: "fragments",
     title: "Fragments Challenge",
     instructions: `
-      Edit the <Summary /> component so it returns an <h1> and <p> wrapped in a React Fragment.
+      Edit the Summary component so it returns an h1 element and p element wrapped in a React Fragment.
     `,
     files: {
       "/App.js": {

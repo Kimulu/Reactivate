@@ -14,18 +14,22 @@ import { useState } from "react";
 function TestRunner() {
   const { dispatch } = useSandpack();
   const [isRunning, setIsRunning] = useState(false);
+  const [isOpen, setIsOpen] = useState(false); // collapsed by default
 
   const handleRunTests = () => {
     setIsRunning(true);
-    dispatch({ type: "run-all-tests" });
+    setIsOpen(true); // open panel on first run
+    dispatch({ type: "refresh" });
 
-    // reset state after ~2s (or when test results are done)
-    setTimeout(() => setIsRunning(false), 2000);
+    setTimeout(() => {
+      dispatch({ type: "run-all-tests" });
+      setIsRunning(false);
+    }, 800);
   };
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header with buttons */}
+      {/* Header */}
       <div className="flex items-center justify-between border-b border-gray-700 px-3 py-1 text-sm bg-gray-800">
         <div className="flex items-center gap-2">
           <span className="font-semibold">Tests</span>
@@ -41,10 +45,24 @@ function TestRunner() {
             {isRunning ? "Running..." : "Run Tests"}
           </button>
         </div>
+
+        {/* Toggle button appears only after first run */}
+        {isOpen && (
+          <button
+            onClick={() => setIsOpen((prev) => !prev)}
+            className="px-2 py-1 rounded-md text-gray-300 hover:text-white"
+          >
+            {isOpen ? "▼ Hide" : "▲ Show"}
+          </button>
+        )}
       </div>
 
-      {/* Test results */}
-      <div className="flex-1 min-h-0 overflow-auto">
+      {/* Test results panel (always mounted, hidden with Tailwind) */}
+      <div
+        className={`flex-1 min-h-0 overflow-auto transition-all duration-300 ${
+          isOpen ? "block" : "hidden"
+        }`}
+      >
         <SandpackTests
           showVerboseButton={false}
           showWatchButton={false}
@@ -130,7 +148,7 @@ export default function ChallengeDetail() {
           </div>
         </SandpackLayout>
 
-        {/* Bottom row: tests only */}
+        {/* Bottom row: tests */}
         <div className="flex flex-[1] border-t border-gray-700 min-h-0">
           <div className="flex-1 flex flex-col min-h-0">
             <TestRunner />
