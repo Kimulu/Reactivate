@@ -1,9 +1,42 @@
 {
-  "dependencies": {
-    "react-icons": "^5.5.0",
-    "react-split-pane": "^0.1.92"
+  "name": "reactivate-monorepo",
+  "version": "1.0.0",
+  "description": "Collaborative Coding Challenges Platform",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "packages/backend/express-backend"
+  ],
+  "scripts": {
+    "dev": "npm run dev:all",
+    "dev:frontend": "npm run dev --workspace=reactivate",
+    "dev:backend": "cd packages/backend/express-backend && npm run dev",
+    "dev:all": "concurrently --kill-others-on-fail \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "build": "npm run build --workspace=reactivate",
+    "build:all": "npm run build --workspaces --if-present",
+    "start": "npm run start --workspace=reactivate",
+    "start:backend": "cd packages/backend/express-backend && npm start",
+    "lint": "npm run lint --workspaces --if-present",
+    "lint:fix": "npm run lint --workspaces --if-present -- --fix",
+    "type-check": "npm run type-check --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "clean": "npm run clean --workspaces --if-present && rm -rf node_modules",
+    "install:all": "npm install"
   },
+  "dependencies": {},
   "devDependencies": {
-    "@types/babel__standalone": "^7.1.9"
-  }
+    "@types/babel__standalone": "^7.1.9",
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Kimulu/Reactivate.git"
+  },
+  "keywords": ["coding-challenges", "react", "nextjs", "express", "mongodb"],
+  "author": "Reactivate Team",
+  "license": "MIT"
 }
