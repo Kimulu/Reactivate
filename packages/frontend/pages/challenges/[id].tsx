@@ -9,23 +9,72 @@ import {
 } from "@codesandbox/sandpack-react";
 import CustomAceEditor from "@/components/CustomAceEditor";
 import FileTabs from "@/components/FileTabs";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 function TestRunner() {
-  const { dispatch } = useSandpack();
+  const { dispatch, listen } = useSandpack();
   const [isRunning, setIsRunning] = useState(false);
-  const [isOpen, setIsOpen] = useState(false); // collapsed by default
+  const [isOpen, setIsOpen] = useState(false);
+  const [testsPassed, setTestsPassed] = useState(false);
+  const [hasRun, setHasRun] = useState(false); // has run tests at least once
+  const [dirty, setDirty] = useState(false); // did user edit code after passing?
 
   const handleRunTests = () => {
     setIsRunning(true);
-    setIsOpen(true); // open panel on first run
-    dispatch({ type: "refresh" });
+    setIsOpen(true);
+    setHasRun(true);
+    setTestsPassed(false);
 
+    dispatch({ type: "refresh" });
     setTimeout(() => {
       dispatch({ type: "run-all-tests" });
-      setIsRunning(false);
     }, 800);
   };
+
+  // Detect code edits → mark as dirty, revert to Attempt
+  useEffect(() => {
+    const unsubscribe = listen((msg) => {
+      if (msg.type === "file/change") {
+        setDirty(true);
+        setTestsPassed(false);
+      }
+    });
+    return () => unsubscribe();
+  }, [listen]);
+
+  // Listen for test results
+  useEffect(() => {
+    const unsubscribe = listen((msg) => {
+      if (msg.type === "test" && msg.event === "total_test_end") {
+        console.log("🟡 total_test_end received, waiting for DOM update...");
+
+        setTimeout(() => {
+          const label = document.querySelector(
+            ".sp-test-spec-label"
+          ) as HTMLElement;
+          if (label) {
+            console.log("🔍 Detected result text:", label.innerText);
+
+            if (label.innerText === "PASS") {
+              alert("test passed");
+              setTestsPassed(true);
+              setDirty(false);
+            } else if (label.innerText === "FAIL") {
+              alert("test failed");
+              setTestsPassed(false);
+            }
+          } else {
+            console.log("⚠️ Could not find .sp-test-spec-label element");
+          }
+
+          // Reset Run Tests button after result is shown
+          setIsRunning(false);
+        }, 500);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [listen]);
 
   return (
     <div className="flex flex-col h-full">
@@ -33,6 +82,8 @@ function TestRunner() {
       <div className="flex items-center justify-between border-b border-gray-700 px-3 py-1 text-sm bg-gray-800">
         <div className="flex items-center gap-2">
           <span className="font-semibold">Tests</span>
+
+          {/* Run Tests */}
           <button
             onClick={handleRunTests}
             className={`px-2 py-1 rounded-md text-white transition-colors duration-200 ${
@@ -44,10 +95,28 @@ function TestRunner() {
           >
             {isRunning ? "Running..." : "Run Tests"}
           </button>
+
+          {/* Attempt/Submit button */}
+          {hasRun && (
+            <button
+              onClick={() =>
+                testsPassed && !dirty
+                  ? alert("✅ user submitted code successfully")
+                  : alert("⚠️ Please fix errors and rerun tests")
+              }
+              className={`px-2 py-1 rounded-md text-white transition-colors duration-200 ${
+                testsPassed && !dirty
+                  ? "bg-green-600 hover:bg-green-700"
+                  : "bg-yellow-600 hover:bg-yellow-700"
+              }`}
+            >
+              {testsPassed && !dirty ? "Submit" : "Attempt"}
+            </button>
+          )}
         </div>
 
         {/* Toggle button appears only after first run */}
-        {isOpen && (
+        {hasRun && (
           <button
             onClick={() => setIsOpen((prev) => !prev)}
             className="px-2 py-1 rounded-md text-gray-300 hover:text-white"
@@ -57,7 +126,7 @@ function TestRunner() {
         )}
       </div>
 
-      {/* Test results panel (always mounted, hidden with Tailwind) */}
+      {/* Test results panel */}
       <div
         className={`flex-1 min-h-0 overflow-auto transition-all duration-300 ${
           isOpen ? "block" : "hidden"
@@ -92,7 +161,7 @@ export default function ChallengeDetail() {
       <SandpackProvider
         template="react"
         theme="dark"
-        files={challenge.files}
+        files={challenge.files ?? {}}
         customSetup={{
           dependencies: {
             "@testing-library/react": "latest",
@@ -121,7 +190,9 @@ export default function ChallengeDetail() {
             {/* Editor */}
             <div className="flex-[2] border-r border-gray-700 flex flex-col min-h-0">
               <div className="border-b border-gray-700">
-                <FileTabs allowedFiles={Object.keys(challenge.files)} />
+                {challenge.files && (
+                  <FileTabs allowedFiles={Object.keys(challenge.files)} />
+                )}
               </div>
               <div className="flex-1 min-h-0 overflow-auto">
                 <CustomAceEditor />
@@ -137,6 +208,7 @@ export default function ChallengeDetail() {
                 <SandpackPreview
                   showOpenInCodeSandbox={false}
                   showRefreshButton={false}
+                  showSandpackErrorOverlay={false}
                   style={{
                     width: "100%",
                     height: "100%",
