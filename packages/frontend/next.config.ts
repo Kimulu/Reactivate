@@ -1,8 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
   reactStrictMode: true,
+
+  turbopack: {
+    root: __dirname, // force Turbopack root to this package
+  },
 };
 
 export default nextConfig;
