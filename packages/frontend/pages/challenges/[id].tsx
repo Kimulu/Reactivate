@@ -34,7 +34,7 @@ function TestRunner() {
   // Detect code edits → mark as dirty, revert to Attempt
   useEffect(() => {
     const unsubscribe = listen((msg) => {
-      if (msg.type === "file/change") {
+      if (msg.type != "success") {
         setDirty(true);
         setTestsPassed(false);
       }

@@ -7,7 +7,7 @@ import "ace-builds/src-noconflict/mode-html";
 import "ace-builds/src-noconflict/theme-dracula";
 import "ace-builds/src-noconflict/ext-language_tools";
 
-const CustomAceEditor = () => {
+const CustomAceEditor = ({ onUserTyping }: { onUserTyping?: () => void }) => {
   const { code, updateCode } = useActiveCode();
   const { sandpack } = useSandpack();
   const { activeFile } = sandpack;
@@ -23,7 +23,10 @@ const CustomAceEditor = () => {
       mode={mode}
       theme="dracula"
       value={code}
-      onChange={updateCode}
+      onChange={(val) => {
+        updateCode(val);
+        onUserTyping?.(); // 👈 notify parent
+      }}
       name="custom-ace-editor"
       fontSize={14}
       width="100%"
